@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+
+<html lang="ms">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<meta content="#0f4c81" name="theme-color"/>
+<meta content="TEMIN HUB — Portal Digital SK Temin untuk murid, guru dan ibu bapa." name="description"/>
+<title>TEMIN HUB | Portal Digital SK Temin</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<!-- Google Fonts (Inter & Poppins) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Poppins:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        sktBlue: '#0f4c81',      /* Biru Rasmi SK Temin */
+                        sktYellow: '#fcd34d',    /* Kuning Sekolah */
+                        sktRed: '#dc2626',       /* Merah Hebat */
+                        sktDark: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at 10% 5%, rgba(252, 211, 77, .15), transparent 24rem),
+                radial-gradient(circle at 95% 18%, rgba(14, 165, 233, .10), transparent 24rem),
+                linear-gradient(180deg, #f8fbff 0%, #f4f8fc 55%, #edf4fa 100%);
+        }
+        .glass-card {
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+        .menu-active {
+            background: #0f4c81 !important;
+            color: white !important;
+            box-shadow: 0 10px 25px rgba(15,76,129,.22);
+        }
+        .font-title {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+<div class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ease-in-out opacity-0 translate-y-[-20px] pointer-events-none" id="toast">
+<div class="bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
+<span class="text-sktYellow" id="toastIcon"><i class="fas fa-info-circle"></i></span>
+<span class="text-sm font-medium" id="toastMessage">Mesej pemberitahuan</span>
+</div>
+</div>
+<header class="bg-gradient-to-br from-blue-950 via-sktBlue to-blue-700 text-white pb-24 pt-7 px-4 relative overflow-hidden rounded-b-[2.25rem] md:rounded-b-[3rem] shadow-xl">
+<div class="absolute top-[-80px] right-[-60px] w-80 h-80 rounded-full bg-white/5 blur-xl pointer-events-none"></div>
+<div class="absolute bottom-[-90px] left-[-60px] w-80 h-80 rounded-full bg-yellow-400/10 blur-xl pointer-events-none"></div>
+<div class="max-w-4xl mx-auto text-center flex flex-col items-center relative z-10">
+<img alt="Logo SK Temin" class="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-2xl cursor-pointer select-none active:scale-95 transition" draggable="false" id="schoolLogo" src="logo-sk-temin.png"/>
+<p class="mt-3 text-sktYellow font-semibold tracking-[.18em] text-[10px] md:text-xs uppercase font-title">Sekolah Kebangsaan Temin</p>
+<h1 class="mt-1 text-3xl md:text-5xl font-extrabold tracking-tight font-title">TEMIN HUB</h1>
+<p class="mt-2 text-blue-100 text-xs md:text-sm">Portal Digital Murid, Guru &amp; Ibu Bapa</p>
+</div>
+</header>
+<main class="max-w-3xl w-full mx-auto px-4 -mt-16 z-10 flex-grow">
+<!-- TAB 1: SEMAKAN PORTAL -->
+<div class="hidden space-y-6 mt-5" id="tabContent-semak">
+<div class="flex items-center justify-between px-1">
+<div><p class="text-[10px] font-bold tracking-widest text-sktBlue uppercase">Perkhidmatan</p><h2 class="text-lg font-extrabold text-slate-800 font-title">Semakan ID DELIMa</h2></div>
+<button class="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-slate-50" onclick="closeDelimaSearch()" type="button"><i class="fas fa-arrow-left mr-1"></i>Kembali</button>
+</div>
+<!-- API Troubleshooting Card (Hidden by default, shown only on connection failure) -->
+<div class="hidden bg-rose-50 border-2 border-rose-500/30 rounded-3xl p-5 md:p-6 space-y-4 shadow-lg" id="troubleshootCard">
+<div class="flex items-start space-x-3">
+<div class="p-2 bg-rose-100 text-rose-600 rounded-xl flex-shrink-0">
+<i class="fas fa-exclamation-triangle text-lg"></i>
+</div>
+<div class="flex-grow">
+<h4 class="text-sm md:text-base font-bold text-rose-900">⚠️ Sambungan Google Apps Script Terkendala! (Failed to Fetch)</h4>
+<p class="text-xs md:text-sm text-rose-800 mt-1">
+                            Sistem gagal mendapatkan data secara terus dari Google Sheets anda. Ini biasanya berlaku kerana tetapan <strong>Deployment Web App</strong> anda masih disekat atau URL salah. Sila pastikan langkah penyelesaian di bawah:
+                        </p>
+</div>
+<button class="text-rose-400 hover:text-rose-700 p-1" onclick="hideElement('troubleshootCard')">
+<i class="fas fa-times text-sm"></i>
+</button>
+</div>
+<div class="bg-white/80 rounded-2xl p-4 text-xs md:text-sm text-slate-700 space-y-2.5 border border-rose-100 font-medium">
+<p class="font-bold text-rose-950 flex items-center"><span class="bg-rose-100 text-rose-700 w-5 h-5 rounded-full inline-flex items-center justify-center mr-1.5 text-[11px]">1</span> Semak tetapan di Google Apps Script:</p>
+<ul class="list-disc pl-5 space-y-1.5 text-slate-600">
+<li>Buka Google Sheet anda, klik <strong class="text-slate-800">Extensions → Apps Script</strong>.</li>
+<li>Di penjuru atas kanan, klik butang biru <strong class="text-slate-800">Deploy → New deployment</strong>.</li>
+<li>Pastikan <span class="bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">Execute as: Me</span>.</li>
+<li>Pastikan <span class="bg-emerald-100 text-emerald-800 px-1 py-0.5 rounded font-bold">Who has access: Anyone</span> (PENTING!).</li>
+<li>Klik <strong class="text-slate-800">Deploy</strong>.</li>
+</ul>
+</div>
+</div>
+<div class="bg-blue-50 border-l-4 border-blue-600 p-4 rounded-r-xl shadow-sm flex items-start space-x-3">
+<div class="text-blue-600 mt-0.5"><i class="fas fa-info-circle text-lg"></i></div>
+<div class="text-xs md:text-sm text-blue-800">
+                    Sila pastikan anda mempunyai <strong>No. Kad Pengenalan (IC)</strong> murid tanpa sempang atau <strong>Nama Penuh</strong> murid yang betul untuk membuat carian.
+                </div>
+</div>
+<div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 transition-all duration-300">
+<h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center space-x-2">
+<span class="p-1.5 bg-blue-100 text-sktBlue rounded-lg"><i class="fas fa-user-check text-sm"></i></span>
+<span>Borang Semakan Maklumat</span>
+</h3>
+<!-- Selection Mode (IC vs Nama) -->
+<div class="grid grid-cols-2 gap-3 mb-6 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+<button class="py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 bg-white text-sktBlue shadow-sm border border-slate-100" id="modeBtn-ic" onclick="setSearchMode('ic')" type="button">
+<i class="fas fa-id-card"></i>
+<span>No. Kad Pengenalan (IC)</span>
+</button>
+<button class="py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 text-slate-600 hover:bg-slate-100" id="modeBtn-name" onclick="setSearchMode('name')" type="button">
+<i class="fas fa-font"></i>
+<span>Nama Penuh Murid</span>
+</button>
+</div>
+<!-- Input Field Form -->
+<form class="space-y-5" id="searchForm" onsubmit="handleSearch(event)">
+<!-- IC Input Field Group -->
+<div class="space-y-2" id="inputGroup-ic">
+<label class="block text-sm font-semibold text-slate-700" for="input-ic">No. Kad Pengenalan (IC) Murid <span class="text-red-500">*</span></label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<i class="fas fa-id-card-alt text-lg"></i>
+</div>
+<input class="w-full pl-11 pr-4 py-3.5 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border-2 border-slate-200 focus:border-sktBlue focus:ring-0 rounded-2xl text-slate-800 placeholder-slate-400 font-medium transition-all duration-200 text-lg tracking-wider" id="input-ic" inputmode="numeric" maxlength="12" pattern="\d*" placeholder="Contoh: 150212060123" type="text"/>
+</div>
+<p class="text-xs text-slate-400 font-normal">Masukkan 12 digit nombor MyKad sahaja tanpa simbol sempang (-) atau jarak.</p>
+</div>
+<!-- Name Input Field Group (Hidden initially) -->
+<div class="space-y-2 hidden" id="inputGroup-name">
+<label class="block text-sm font-semibold text-slate-700" for="input-name">Nama Penuh Murid <span class="text-red-500">*</span></label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<i class="fas fa-signature text-lg"></i>
+</div>
+<input class="w-full pl-11 pr-4 py-3.5 bg-slate-50 hover:bg-slate-100/50 focus:bg-white border-2 border-slate-200 focus:border-sktBlue focus:ring-0 rounded-2xl text-slate-800 placeholder-slate-400 font-semibold uppercase transition-all duration-200" id="input-name" placeholder="Contoh: MUHAMMAD ADAM" type="text"/>
+</div>
+<p class="text-xs text-slate-400 font-normal">Masukkan nama penuh atau sebahagian nama murid.</p>
+</div>
+<!-- Submit Button -->
+<button class="w-full bg-gradient-to-r from-sktBlue to-blue-700 hover:from-blue-800 hover:to-blue-950 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-blue-900/10 hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-3 transform active:scale-[0.98]" type="submit">
+<span class="font-title" id="btnText">SEMAK SEKARANG</span>
+<div class="hidden animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" id="btnSpinner"></div>
+</button>
+</form>
+<!-- Current Data Source Indicator -->
+<div class="mt-4 flex items-center justify-center space-x-2 text-xs">
+<span class="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-slate-500 font-medium" id="dataSourceLabel">Berhubung ke Pangkalan Data SK Temin</span>
+</div>
+</div>
+<div class="hidden space-y-4" id="resultSection">
+<div class="flex items-center justify-between px-2">
+<h3 class="text-md font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-2">
+<i class="fas fa-clipboard-list text-sktBlue"></i>
+<span>Keputusan Carian</span>
+</h3>
+<button class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center space-x-1 transition" onclick="clearResults()">
+<i class="fas fa-trash-alt"></i>
+<span>Kosongkan Hasil</span>
+</button>
+</div>
+<!-- Multiple Matches Alert Container (If search returns multiple names) -->
+<div class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl" id="multipleMatchesAlert">
+<div class="flex">
+<div class="flex-shrink-0 text-amber-500">
+<i class="fas fa-exclamation-triangle"></i>
+</div>
+<div class="ml-3">
+<p class="text-xs md:text-sm font-semibold text-amber-800">Sila Pilih Murid Yang Betul</p>
+<p class="text-xs text-amber-700 mt-1">Kami menemui beberapa rekod murid yang sepadan dengan nama tersebut. Sila klik nama di bawah untuk melihat maklumat terperinci:</p>
+<div class="mt-3 flex flex-wrap gap-2" id="matchesButtonsList">
+<!-- Dynamic selection buttons appear here -->
+</div>
+</div>
+</div>
+</div>
+<!-- Single Student Result Card -->
+<div class="bg-white/95 backdrop-blur-sm rounded-[28px] p-5 md:p-8 shadow-2xl shadow-slate-900/10 border border-white space-y-6 relative overflow-hidden transition-all duration-300 ring-1 ring-slate-200/70" id="singleResultCard">
+<div class="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gradient-to-br from-blue-100/80 to-sky-50/30"></div>
+<img src="logo-sk-temin.png" alt="" aria-hidden="true" class="absolute -right-7 top-7 w-40 h-40 md:w-48 md:h-48 object-contain opacity-[0.05] pointer-events-none select-none"/>
+<div class="absolute bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-sktBlue via-sky-400 to-sktYellow"></div>
+<!-- Header Profile of Student -->
+<div class="relative z-10 flex items-start space-x-3 md:space-x-4 border-b border-slate-100 pb-5">
+<div class="w-12 h-12 md:w-14 md:h-14 flex-shrink-0 bg-gradient-to-tr from-sktBlue to-blue-500 rounded-2xl flex items-center justify-center text-white text-lg md:text-xl font-bold shadow-md shadow-blue-900/10">
+<i class="fas fa-user-graduate"></i>
+</div>
+<div class="min-w-0 flex-1">
+<h4 class="text-base sm:text-lg md:text-xl font-bold text-slate-800 uppercase tracking-tight leading-snug break-words" id="res-nama">NUR SOFIA BINTI AHMAD</h4>
+<div class="flex flex-wrap gap-2 mt-1.5">
+<span class="bg-blue-50 text-sktBlue text-[11px] font-bold px-2.5 py-1 rounded-full border border-blue-100 flex items-center space-x-1">
+<i class="fas fa-calendar-alt text-[9px]"></i>
+<span id="res-tahun">TAHUN 5</span>
+</span>
+<span class="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 flex items-center space-x-1">
+<i class="fas fa-door-open text-[9px]"></i>
+<span id="res-kelas">GEMILANG</span>
+</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- ID DELIMa Field -->
+<div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group hover:border-blue-200 transition-all duration-200">
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ID DELIMa Murid</label>
+<div class="flex items-center justify-between">
+<span class="text-sm md:text-base font-bold text-sktBlue font-mono break-all pr-2" id="res-id">m-1234567@moe-dl.edu.my</span>
+<button class="text-slate-400 hover:text-sktBlue p-2.5 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-95 flex-shrink-0 flex items-center space-x-1" onclick="copyToClipboard('res-id', 'ID DELIMa')" title="Salin ID DELIMa">
+<i class="far fa-copy text-sm"></i>
+<span class="text-[10px] font-bold">Salin</span>
+</button>
+</div>
+</div>
+<!-- Password Field -->
+<div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 relative group hover:border-blue-200 transition-all duration-200">
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">KATA LALUAN (PASSWORD)</label>
+<div class="flex items-center justify-between">
+<div class="relative flex-grow pr-2">
+<input class="text-sm md:text-base font-bold text-slate-800 font-mono bg-transparent border-none focus:outline-none focus:ring-0 p-0 w-full select-none pointer-events-none" id="res-pass" readonly="" type="password" value="SKT@12345"/>
+</div>
+<div class="flex items-center space-x-2 flex-shrink-0">
+<button class="text-slate-400 hover:text-slate-600 p-2 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-95" onclick="togglePasswordVisibility()" title="Sembunyi/Papar">
+<i class="far fa-eye" id="passEyeIcon"></i>
+</button>
+<button class="text-slate-400 hover:text-sktBlue p-2.5 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-95 flex items-center space-x-1" onclick="copyToClipboard('res-pass', 'Kata Laluan')" title="Salin Kata Laluan">
+<i class="far fa-copy text-sm"></i>
+<span class="text-[10px] font-bold">Salin</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-1">
+<button class="w-full bg-gradient-to-r from-sktBlue to-blue-700 hover:from-blue-800 hover:to-blue-950 active:scale-[0.98] text-white font-bold py-4 px-4 rounded-2xl text-sm md:text-base transition-all duration-200 shadow-lg" onclick="copyAll()" type="button">
+<i class="far fa-copy mr-2"></i>SALIN SEMUA MAKLUMAT
+</button>
+</div>
+</div>
+</div>
+<!-- No Record Alert Card -->
+<div class="hidden bg-white rounded-3xl p-8 shadow-xl border-2 border-red-500/20 text-center space-y-4" id="noRecordCard">
+<div class="w-16 h-16 bg-red-50 text-sktRed rounded-full flex items-center justify-center text-2xl mx-auto border border-red-100">
+<i class="fas fa-user-times"></i>
+</div>
+<h4 class="text-lg font-bold text-slate-800 font-title">REKOD TIDAK DITEMUI</h4>
+<p class="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+                    Sila pastikan ejaan nama atau nombor MyKad yang dimasukkan adalah betul. Jika maklumat masih gagal diakses, sila berhubung dengan <strong>Guru Kelas</strong> anak anda untuk semakan semula pangkalan data.
+                </p>
+<button class="inline-flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition" onclick="focusSearch()">
+<i class="fas fa-redo"></i>
+<span>Cuba Sekali Lagi</span>
+</button>
+</div>
+</div>
+<!-- TAB 2: ADMIN AREA -->
+<div class="hidden space-y-6" id="tabContent-admin">
+<!-- Lock Screen Section (DIKUNCI PIN: 634637) -->
+<div class="relative bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 text-center space-y-5" id="admin-lock-screen">
+<button type="button" onclick="switchTab('semak')" class="absolute top-4 left-4 text-xs text-slate-500 hover:text-sktBlue font-semibold"><i class="fas fa-arrow-left mr-1"></i>Kembali</button>
+<div class="w-14 h-14 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-2xl mx-auto">
+<i class="fas fa-lock"></i>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-800 font-title">Halaman Terkunci</h3>
+<p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">Sila masukkan PIN keselamatan admin untuk mengakses tetapan penyambungan Google Sheets.</p>
+</div>
+<form class="max-w-xs mx-auto space-y-4" onsubmit="verifyAdminPin(event)">
+<input class="w-full text-center px-4 py-3 bg-slate-50 border-2 border-slate-200 focus:border-sktBlue focus:ring-0 rounded-2xl text-lg font-bold tracking-widest text-slate-800" id="input-adminPin" maxlength="8" placeholder="Masukkan PIN Admin" type="password"/>
+<button class="w-full bg-sktBlue hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-2xl shadow transition" type="submit">
+                        Sahkan Akses
+                    </button>
+</form>
+</div>
+<div class="hidden bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 space-y-6" id="admin-config-screen">
+<div class="flex items-center justify-between border-b border-slate-100 pb-4">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+<i class="fas fa-database text-lg"></i>
+</div>
+<div>
+<h3 class="text-lg font-bold text-slate-800">Penyambung Google Sheets</h3>
+<p class="text-xs text-slate-400">Pautan langsung semasa sistem portal anda.</p>
+</div>
+</div>
+<button class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg font-semibold transition flex items-center space-x-1" onclick="lockAdminSession()">
+<i class="fas fa-sign-out-alt"></i>
+<span>Keluar</span>
+</button>
+</div>
+<!-- Target Web App URL Input Form -->
+<div class="space-y-4">
+<div class="p-3.5 bg-yellow-50 border border-yellow-200 rounded-2xl text-xs text-yellow-800 leading-relaxed">
+<i class="fas fa-link mr-1"></i> ID Google Sheet Anda: <strong class="font-mono">1v5NutyOGM_dA_dJcKXoTiz4vZXYL9HwUHx-YiFPtaqU</strong><br/>
+                        Sistem sedang menggunakan Web App URL yang telah disimpan secara kekal dalam sistem.
+                    </div>
+<div>
+<label class="block text-sm font-semibold text-slate-700 mb-2" for="input-webAppUrl">Google Apps Script Web App URL</label>
+<textarea class="w-full p-4 bg-slate-50 border-2 border-slate-200 focus:border-sktBlue focus:ring-0 rounded-2xl text-sm font-mono text-slate-800 placeholder-slate-400 transition" id="input-webAppUrl" placeholder="Tampal URL Web App anda di sini" rows="2"></textarea>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="flex-1 bg-sktBlue hover:bg-blue-800 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-900/10 hover:shadow-xl transition flex items-center justify-center space-x-2 min-w-[150px]" onclick="saveAdminSettings()">
+<i class="fas fa-save"></i>
+<span>Simpan Tetapan Baharu</span>
+</button>
+<button class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 px-5 rounded-2xl border border-slate-200 transition flex items-center justify-center space-x-2" onclick="resetToDemo()">
+<i class="fas fa-undo"></i>
+<span>Set Semula Lalai</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Section -->
+<footer class="bg-slate-950 text-slate-400 py-10 px-4 mt-16 text-center border-t border-slate-800">
+<div class="max-w-4xl mx-auto">
+<div class="grid grid-cols-3 gap-2 md:gap-4 mb-7">
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 md:p-4"><i class="fas fa-users text-sktYellow"></i><div id="visitorTotal" class="mt-2 text-lg md:text-2xl font-extrabold text-white">—</div><div class="text-[9px] md:text-xs">Jumlah Pengunjung</div></div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 md:p-4"><i class="fas fa-calendar-day text-sky-400"></i><div id="visitorToday" class="mt-2 text-lg md:text-2xl font-extrabold text-white">—</div><div class="text-[9px] md:text-xs">Pengunjung Hari Ini</div></div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 md:p-4"><i class="fas fa-search text-emerald-400"></i><div id="searchToday" class="mt-2 text-lg md:text-2xl font-extrabold text-white">—</div><div class="text-[9px] md:text-xs">Semakan Hari Ini</div></div>
+</div>
+<div class="flex items-center justify-center gap-2 mb-3 text-xs"><span id="systemStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span><span id="systemStatusText">Memeriksa status sistem…</span></div>
+<p class="text-sm font-bold text-white">TEMIN HUB</p><p class="mt-1 text-xs text-sktYellow">Portal Digital SK Temin</p>
+<p class="mt-4 text-[11px] text-slate-500">Dibangunkan dan diselenggara oleh Unit ICT SK Temin<br/>© 2026 SK Temin, Jerantut, Pahang</p>
+</div>
+</footer>
+<script>
+        
+        /* PANGKALAN DATA SIMULASI (Digunakan jika pautan dirosakkan atau diset semula) */
+        const DEMO_STUDENT_DATA = [
+            {
+                nama: "MUHAMMAD ADAM BIN MOHD ZAKI",
+                ic: "150212060123",
+                tahun: "5",
+                kelas: "BESTARI",
+                id_delima: "m-1234567@moe-dl.edu.my",
+                password: "Skt#2026Adam"
+            }
+        ];
+
+        /* System State Variables */
+        let searchMode = 'ic'; // 'ic' atau 'name'
+        
+        // Google Apps Script Web App URL anda disimpan di sini secara kekal!
+        const DEFAULT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxXvBdr1tFe2atfNNl6EYTMwqxTwuGa_7SJfRWZW1e3tGdLJkwir15CV3OleW-Citd6/exec";
+        let webAppUrl = DEFAULT_WEB_APP_URL;
+        
+        let currentMultipleMatches = [];
+        let isAdminAuthenticated = false; // Status log masuk keselamatan admin
+
+        /* Initialization on window load */
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('skt_delima_webapp_url');
+            webAppUrl = savedUrl || DEFAULT_WEB_APP_URL;
+            document.getElementById('input-webAppUrl').value = webAppUrl;
+            updateDataSourceIndicator(true);
+            showMainPage('dashboard');
+
+            const schoolLogo = document.getElementById('schoolLogo');
+            let logoTapCount = 0;
+            let logoTapTimer = null;
+            schoolLogo.addEventListener('click', function() {
+                logoTapCount += 1;
+                clearTimeout(logoTapTimer);
+                if (logoTapCount >= 3) {
+                    logoTapCount = 0;
+                    switchTab('admin');
+                    showToast('Akses Admin dibuka. Sila masukkan PIN.');
+                    return;
+                }
+                logoTapTimer = setTimeout(() => logoTapCount = 0, 1200);
+            });
+
+            registerVisitor();
+        };
+
+        /* Paparan Semakan / Admin */
+        function switchTab(tabId) {
+            const semakTab = document.getElementById('tabContent-semak');
+            const adminTab = document.getElementById('tabContent-admin');
+            if (tabId === 'admin') {
+                hideAllMainPages();
+                semakTab.classList.add('hidden');
+                adminTab.classList.remove('hidden');
+                renderAdminScreenState();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                adminTab.classList.add('hidden');
+                showMainPage('dashboard');
+            }
+        }
+
+        /* Verify PIN untuk melayari bahagian Admin (PIN: 634637) */
+        function verifyAdminPin(event) {
+            event.preventDefault();
+            const enteredPin = document.getElementById('input-adminPin').value.trim();
+            
+            if (enteredPin === "634637") {
+                isAdminAuthenticated = true;
+                showToast("PIN disahkan! Akses Admin dibenarkan.");
+                renderAdminScreenState();
+            } else {
+                showToast("Ralat: PIN Admin Salah!", true);
+                document.getElementById('input-adminPin').value = '';
+                document.getElementById('input-adminPin').focus();
+            }
+        }
+
+        /* Paparkan skrin mengikut status pengesahan */
+        function renderAdminScreenState() {
+            const lockScreen = document.getElementById('admin-lock-screen');
+            const configScreen = document.getElementById('admin-config-screen');
+            
+            if (isAdminAuthenticated) {
+                lockScreen.classList.add('hidden');
+                configScreen.classList.remove('hidden');
+            } else {
+                lockScreen.classList.remove('hidden');
+                configScreen.classList.add('hidden');
+                document.getElementById('input-adminPin').value = '';
+                setTimeout(() => {
+                    document.getElementById('input-adminPin').focus();
+                }, 100);
+            }
+        }
+
+        /* Log out out of Admin Session */
+        function lockAdminSession() {
+            isAdminAuthenticated = false;
+            renderAdminScreenState();
+            switchTab('semak');
+            showToast("Sesi Admin telah dikunci semula.");
+        }
+
+
+        const MAIN_PAGES = ['dashboard', 'murid', 'guru', 'parent'];
+        let lastMainPage = 'dashboard';
+
+        function hideAllMainPages() {
+            MAIN_PAGES.forEach(page => {
+                const section = document.getElementById(`mainPage-${page}`);
+                if (section) section.classList.add('hidden');
+            });
+            document.getElementById('tabContent-semak').classList.add('hidden');
+        }
+
+        function showMainPage(page) {
+            lastMainPage = page;
+            document.getElementById('tabContent-admin').classList.add('hidden');
+            hideAllMainPages();
+            const target = document.getElementById(`mainPage-${page}`);
+            if (target) target.classList.remove('hidden');
+            MAIN_PAGES.forEach(item => {
+                const btn = document.getElementById(`mainMenu-${item}`);
+                if (!btn) return;
+                btn.classList.toggle('menu-active', item === page);
+                btn.classList.toggle('text-slate-600', item !== page);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openDelimaSearch(sourcePage) {
+            lastMainPage = sourcePage || 'parent';
+            hideAllMainPages();
+            document.getElementById('tabContent-semak').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => document.getElementById('input-ic').focus(), 250);
+        }
+
+        function closeDelimaSearch() {
+            clearResults();
+            showMainPage(lastMainPage || 'dashboard');
+        }
+
+        function safeNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toLocaleString('ms-MY') : '—';
+        }
+
+        function updateStatsUI(data) {
+            document.getElementById('visitorTotal').textContent = safeNumber(data.totalVisitors);
+            document.getElementById('visitorToday').textContent = safeNumber(data.visitorsToday);
+            document.getElementById('searchToday').textContent = safeNumber(data.searchesToday);
+            document.getElementById('systemStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            document.getElementById('systemStatusText').textContent = 'Sistem Online';
+        }
+
+        function setStatsOffline() {
+            document.getElementById('systemStatusDot').className = 'w-2 h-2 rounded-full bg-rose-500';
+            document.getElementById('systemStatusText').textContent = 'Statistik belum disambungkan';
+        }
+
+        async function registerVisitor() {
+            try {
+                const todayKey = new Date().toISOString().slice(0, 10);
+                const visitKey = `teminhub_visit_${todayKey}`;
+                let action = 'stats';
+                if (!localStorage.getItem(visitKey)) {
+                    action = 'visit';
+                    localStorage.setItem(visitKey, '1');
+                }
+                const response = await fetch(`${webAppUrl}?action=${action}&_=${Date.now()}`);
+                if (!response.ok) throw new Error('Statistik gagal');
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                updateStatsUI(data);
+            } catch (error) {
+                console.warn('Visitor counter:', error);
+                setStatsOffline();
+            }
+        }
+
+        function recordSearchStat() {
+            fetch(`${webAppUrl}?action=search&_=${Date.now()}`)
+                .then(response => response.json())
+                .then(data => { if (!data.error) updateStatsUI(data); })
+                .catch(() => {});
+        }
+
+        /* Toggle Search Mode: IC vs Name */
+        function setSearchMode(mode) {
+            searchMode = mode;
+            const btnIc = document.getElementById('modeBtn-ic');
+            const btnName = document.getElementById('modeBtn-name');
+            const groupIc = document.getElementById('inputGroup-ic');
+            const groupName = document.getElementById('inputGroup-name');
+
+            if (mode === 'ic') {
+                btnIc.className = "py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 bg-white text-sktBlue shadow-sm border border-slate-100";
+                btnName.className = "py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 text-slate-600 hover:bg-slate-100";
+                groupIc.classList.remove('hidden');
+                groupName.classList.add('hidden');
+                document.getElementById('input-ic').focus();
+            } else {
+                btnName.className = "py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 bg-white text-sktBlue shadow-sm border border-slate-100";
+                btnIc.className = "py-3 px-3 rounded-lg text-xs md:text-sm font-semibold flex items-center justify-center space-x-2 transition-all duration-200 text-slate-600 hover:bg-slate-100";
+                groupName.classList.remove('hidden');
+                groupIc.classList.add('hidden');
+                document.getElementById('input-name').focus();
+            }
+        }
+
+        /* Update Data Source Indicator text */
+        function updateDataSourceIndicator(isLive) {
+            const label = document.getElementById('dataSourceLabel');
+            if (isLive) {
+                label.innerHTML = "Berhubung Terus ke Pangkalan Data SK Temin (Aktif)";
+                label.className = "text-emerald-600 font-bold tracking-wide";
+            } else {
+                label.innerHTML = "Menggunakan Pangkalan Data Simulasi (Mod Demo)";
+                label.className = "text-amber-600 font-medium";
+            }
+        }
+
+        /* Save Web App URL configuration */
+        function saveAdminSettings() {
+            const urlInput = document.getElementById('input-webAppUrl').value.trim();
+            if (urlInput === "") {
+                showToast("Sila masukkan URL Google Apps Script Web App yang sah.", true);
+                return;
+            }
+            if (!urlInput.startsWith("https://script.google.com")) {
+                showToast("Format URL tidak sah! Mestilah bermula dengan https://script.google.com", true);
+                return;
+            }
+
+            webAppUrl = urlInput;
+            localStorage.setItem('skt_delima_webapp_url', urlInput);
+            updateDataSourceIndicator(true);
+            showToast("Tetapan disimpan! Menyambung ke Google Sheet anda.");
+            switchTab('semak');
+        }
+
+        /* Reset Connection to Default Hardcoded URL */
+        function resetToDemo() {
+            localStorage.removeItem('skt_delima_webapp_url');
+            webAppUrl = DEFAULT_WEB_APP_URL;
+            document.getElementById('input-webAppUrl').value = DEFAULT_WEB_APP_URL;
+            updateDataSourceIndicator(true);
+            showToast("Sistem dikembalikan ke pautan Google Sheet SK Temin lalai.");
+            switchTab('semak');
+        }
+
+        /* Handle Search Action */
+        function handleSearch(event) {
+            event.preventDefault();
+            
+            // Clear prior states
+            hideElement('resultSection');
+            hideElement('noRecordCard');
+            hideElement('multipleMatchesAlert');
+            hideElement('troubleshootCard');
+
+            let query = "";
+            if (searchMode === 'ic') {
+                query = document.getElementById('input-ic').value.trim();
+                query = query.replace(/[^0-9]/g, '');
+                if (query.length === 0) {
+                    showToast("Sila masukkan nombor MyKad murid.", true);
+                    return;
+                }
+                if (query.length !== 12) {
+                    showToast("Sila pastikan nombor MyKad mengandungi 12 digit.", true);
+                    return;
+                }
+            } else {
+                query = document.getElementById('input-name').value.trim();
+                if (query.length < 3) {
+                    showToast("Sila taip sekurang-kurangnya 3 aksara nama murid.", true);
+                    return;
+                }
+            }
+
+            showLoading(true);
+            recordSearchStat();
+
+            // Execute Live Google Sheets Web App API Request
+            executeOnlineSearch(query);
+        }
+
+        /* Execute Live Google Sheets Web App API Request */
+        function executeOnlineSearch(query) {
+            const fetchUrl = `${webAppUrl}?type=${searchMode}&query=${encodeURIComponent(query)}`;
+
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Rangkaian tergendala atau URL tidak betul.');
+                    return response.json();
+                })
+                .then(data => {
+                    showLoading(false);
+                    if (data.error) {
+                        showToast(`Ralat dari Server: ${data.error}`, true);
+                        return;
+                    }
+                    processResults(data);
+                })
+                .catch(error => {
+                    showLoading(false);
+                    console.error("API error:", error);
+                    
+                    // Tunjukkan kad troubleshoot jika sambungan terus gagal
+                    showElement('troubleshootCard');
+                    
+                    showToast("Sambungan Google Gagal! Menggunakan mod demonstrasi.", true);
+                    executeOfflineSearch(query);
+                });
+        }
+
+        /* Execute Local Backup Search if connection fails */
+        function executeOfflineSearch(query) {
+            const results = [];
+            const cleanQuery = query.toLowerCase();
+
+            for (const student of DEMO_STUDENT_DATA) {
+                if (searchMode === 'ic') {
+                    if (student.ic === cleanQuery) {
+                        results.push(student);
+                    }
+                } else {
+                    if (student.nama.toLowerCase().includes(cleanQuery)) {
+                        results.push(student);
+                    }
+                }
+            }
+            processResults(results);
+        }
+
+        /* Process result list and render UI */
+        function processResults(results) {
+            if (results && results.length > 0) {
+                showElement('resultSection');
+                
+                if (results.length === 1) {
+                    renderStudentResult(results[0]);
+                } else {
+                    currentMultipleMatches = results;
+                    renderMultipleMatches(results);
+                }
+            } else {
+                showElement('noRecordCard');
+            }
+        }
+
+        /* Render Single Student Card */
+        function renderStudentResult(student) {
+            hideElement('multipleMatchesAlert');
+            showElement('singleResultCard');
+
+            document.getElementById('res-nama').innerText = student.nama;
+            document.getElementById('res-tahun').innerText = student.tahun.toString().toUpperCase().startsWith('TAHUN') ? student.tahun.toUpperCase() : `TAHUN ${student.tahun}`;
+            document.getElementById('res-kelas').innerText = student.kelas.toUpperCase();
+            document.getElementById('res-id').innerText = student.id_delima;
+            
+            const passInput = document.getElementById('res-pass');
+            passInput.value = student.password;
+            
+            // Reset visible state to hidden
+            passInput.type = "password";
+            document.getElementById('passEyeIcon').className = "far fa-eye";
+        }
+
+        /* Render Multiple Selection Buttons */
+        function renderMultipleMatches(students) {
+            hideElement('singleResultCard');
+            showElement('multipleMatchesAlert');
+
+            const listContainer = document.getElementById('matchesButtonsList');
+            listContainer.innerHTML = ''; // clear prior buttons
+
+            students.forEach((student, index) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bg-white hover:bg-amber-100 text-slate-800 hover:text-slate-900 border border-amber-200 hover:border-amber-400 font-bold text-xs py-2 px-3 rounded-lg transition-all duration-200 shadow-sm flex items-center space-x-2';
+                btn.onclick = () => selectSpecificStudent(index);
+                btn.innerHTML = `
+                    <i class="fas fa-chevron-right text-[10px] text-amber-500"></i>
+                    <span>${student.nama} (${student.kelas})</span>
+                `;
+                listContainer.appendChild(btn);
+            });
+
+            // Default load the first student in the list
+            renderStudentResult(students[0]);
+        }
+
+        /* Select a specific student from multiple names matching */
+        function selectSpecificStudent(index) {
+            if (currentMultipleMatches[index]) {
+                renderStudentResult(currentMultipleMatches[index]);
+                showToast(`Memaparkan maklumat: ${currentMultipleMatches[index].nama}`);
+            }
+        }
+
+        /* Copy Field Value to Clipboard Utility */
+        function copyToClipboard(elementId, labelName) {
+
+async function copyAll() {
+    const nama = document.getElementById('res-nama')?.textContent.trim() || '';
+    const tahun = document.getElementById('res-tahun')?.textContent.trim() || '';
+    const kelas = document.getElementById('res-kelas')?.textContent.trim() || '';
+    const idDelima = document.getElementById('res-id')?.textContent.trim() || '';
+    const password = document.getElementById('res-pass')?.value.trim() || '';
+
+    const maklumat = `MAKLUMAT AKAUN DELIMa MURID
+
+Nama: ${nama}
+Tahun: ${tahun}
+Kelas: ${kelas}
+ID DELIMa: ${idDelima}
+Kata Laluan: ${password}`;
+
+    try {
+        await navigator.clipboard.writeText(maklumat);
+        alert('Semua maklumat berjaya disalin.');
+    } catch (error) {
+        const textArea = document.createElement('textarea');
+        textArea.value = maklumat;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        alert('Semua maklumat berjaya disalin.');
+    }
+}
+            const inputElement = document.getElementById(elementId);
+            let textToCopy = "";
+
+            if (inputElement.tagName === 'INPUT') {
+                textToCopy = inputElement.value;
+            } else {
+                textToCopy = inputElement.innerText;
+            }
+            
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(`${labelName} berjaya disalin!`);
+                } else {
+                    showToast("Gagal menyalin. Sila salin secara manual.", true);
+                }
+            } catch (err) {
+                showToast("Ralat ketika menyalin.", true);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        /* Toggle Password Input Visible/Hidden Masking */
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('res-pass');
+            const icon = document.getElementById('passEyeIcon');
+
+
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                icon.className = "far fa-eye-slash text-sktBlue";
+            } else {
+                passInput.type = "password";
+                icon.className = "far fa-eye";
+            }
+        }
+
+        /* Toast notifications styling and animation */
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            if (isError) {
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                toastIcon.className = "text-red-500";
+            } else {
+                toastIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                toastIcon.className = "text-emerald-500";
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            }, 3000);
+        }
+
+        /* Utility Helpers for display manipulation */
+        function showLoading(isLoading) {
+            const spinner = document.getElementById('btnSpinner');
+            const text = document.getElementById('btnText');
+            
+            if (isLoading) {
+                spinner.classList.remove('hidden');
+                text.innerText = "MENYEMAK REKOD...";
+            } else {
+                spinner.classList.add('hidden');
+                text.innerText = "SEMAK SEKARANG";
+            }
+        }
+
+        function clearResults() {
+            hideElement('resultSection');
+            hideElement('noRecordCard');
+            hideElement('multipleMatchesAlert');
+            document.getElementById('input-ic').value = '';
+            document.getElementById('input-name').value = '';
+            showToast("Borang carian dibersihkan.");
+        }
+
+        function focusSearch() {
+            clearResults();
+            if (searchMode === 'ic') {
+                document.getElementById('input-ic').focus();
+            } else {
+                document.getElementById('input-name').focus();
+            }
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+window.copyAll = function () {
+    const namaElement = document.getElementById('res-nama');
+    const tahunElement = document.getElementById('res-tahun');
+    const kelasElement = document.getElementById('res-kelas');
+    const idElement = document.getElementById('res-id');
+    const passwordElement = document.getElementById('res-pass');
+
+    if (!namaElement || !tahunElement || !kelasElement || !idElement || !passwordElement) {
+        alert('Ralat: Maklumat murid tidak dijumpai.');
+        return;
+    }
+
+    const nama = namaElement.textContent.trim();
+    const tahun = tahunElement.textContent.trim();
+    const kelas = kelasElement.textContent.trim();
+    const idDelima = idElement.textContent.trim();
+    const password = passwordElement.value.trim();
+
+    const teks = [
+        'MAKLUMAT AKAUN DELIMa MURID',
+        '',
+        `Nama: ${nama}`,
+        `Tahun: ${tahun}`,
+        `Kelas: ${kelas}`,
+        `ID DELIMa: ${idDelima}`,
+        `Kata Laluan: ${password}`
+    ].join('\n');
+
+    function salinCaraLama() {
+        const kotakSalinan = document.createElement('textarea');
+
+        kotakSalinan.value = teks;
+        kotakSalinan.setAttribute('readonly', '');
+        kotakSalinan.style.position = 'fixed';
+        kotakSalinan.style.top = '-9999px';
+        kotakSalinan.style.left = '-9999px';
+
+        document.body.appendChild(kotakSalinan);
+
+        kotakSalinan.focus();
+        kotakSalinan.select();
+        kotakSalinan.setSelectionRange(0, kotakSalinan.value.length);
+
+        const berjaya = document.execCommand('copy');
+
+        document.body.removeChild(kotakSalinan);
+
+        if (berjaya) {
+            alert('Semua maklumat berjaya disalin.');
+        } else {
+            alert('Maklumat tidak dapat disalin. Sila cuba semula.');
+        }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(teks)
+            .then(function () {
+                alert('Semua maklumat berjaya disalin.');
+            })
+            .catch(function () {
+                salinCaraLama();
+            });
+    } else {
+        salinCaraLama();
+    }
+};
+    </script>
+</body>
+</html>
